@@ -1,0 +1,129 @@
+<?php
+// Dependencias
+require_once('inc/api_funcoes.php');
+require_once('inc/config.php');
+require_once('inc/funcoes.php');
+
+// Tratamento de mensagem
+$error_mensagem = '';
+$successo_mensagem = '';
+
+//----------------------
+
+if ($_SERVER['REQUEST_METHOD'] != 'POST')
+{
+    if(!isset($_GET['id'])){
+        die('ID não passado');
+    }
+
+    $produto = api_request('get_produto', 'POST', ['id' => $_GET['id']]) ['data']['resultados'][0];
+
+}
+
+
+//----------------------
+// Lógica ao clicar em 'atualizar'
+if ($_SERVER['REQUEST_METHOD'] == 'POST')
+{
+
+    $resultados = api_request('editar_produto', 'POST', [
+        'id' => $_POST['id'],
+        'produto' => $_POST['produto'],
+        'quantidade' => $_POST['quantidade']
+    ]);
+    
+    
+    // PENDENTE - VARIAVEL RESULTADOS RETORNANDO VAZIA - deixar assim :) 
+
+
+    // Apresenta mensagem
+    if (isset($resultados['data']['status'])) 
+    {   
+        if ($resultados['data']['status'] == 'ERROR'){
+            $error_mensagem = $resultados['data']['mensagem'];
+        } elseif ($resultados['data']['status'] == 'SUCESSO') {
+            $successo_mensagem = $resultados['data']['mensagem'];
+        }
+    }
+    
+    //----------------------
+    // Recarregando info
+    $produto = api_request('get_produto', 'POST', ['id' => $_POST['id']]) ['data']['resultados'][0];
+    
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar produto</title>
+    <link rel="stylesheet" href="assets/bootstrap/bootstrap.min.css">
+    <link rel="shortcut icon" href="../recursos/favicon/tabela-favicon.png" type="image/x-icon">
+</head>
+
+<body>
+
+    <?php include('inc/nav.php') ?>
+
+    <section class="container">
+        <div class="row my-5">
+            <div class="col-sm-6 offset-sm-3 card bg-light p-4">
+
+                <form action="produtos_editar.php" method="POST">
+
+                    <input type="hidden" name="id" value="<?= $produto['id_produto'] ?>">
+
+                    <div class="mb-3">
+
+                        <label for="nome">Atualizar Produto:</label>
+                        <input type="text" name="produto" class="form-control" value="<?= $produto['produto']?>">
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="telefone">Atualizar Quantidade:</label>
+                        <input type="number" name="quantidade" class="form-control" value="<?= $produto['quantidade'] ?>">
+
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="mb-3 text-center">
+                        <input type="submit" class="btn btn-primary btn-sm" value="Atualizar">
+
+                        <a href="produtos.php" class="btn btn-secondary btn-sm">Cancelar</a>
+                    </div>
+
+                    
+
+                    <!-- Bloco apresentação de mensagem -->
+                    <?php if($error_mensagem) : ?>
+                        <div class="alert alert-danger p-2 text-center">
+                            <?= $error_mensagem ?>
+                        </div>
+
+                    <?php elseif($successo_mensagem) : ?>
+                        <div class="alert alert-success p-2 text-center">
+                            <?= $successo_mensagem ?>
+                        </div>
+
+                    <?php endif;?>
+
+                </form>
+
+            </div>
+        </div>
+
+
+    </section>
+
+
+    <script src="assets/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
